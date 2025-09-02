@@ -7,15 +7,17 @@ import toast, { Toaster } from "react-hot-toast";
 const character = [
 	{ name: "Waldo", icon: "/Icons/Waldo.png" },
 	{ name: "Wizard", icon: "/Icons/Wizard.png" },
-	{ name: "Wilma", icon: "/Icons/Wilma.png" },
+	{ name: "Wenda", icon: "/Icons/Wenda.png" },
 ];
 
 
 
-export default function Game() {
+export default function Test() {
 	const [box, setBox] = useState(null); // {xPct,yPct}
 	const [result, setResult] = useState(null);
 	const [remaining, setRemaining] = useState(character);
+
+	
 
 	// timer state
 	const [startAt, setStartAt] = useState(null); // ms timestamp
@@ -28,7 +30,7 @@ export default function Game() {
 	const Ans = [
 		{ name: "Waldo", coords: { x: 43.2, y: 75.5 } },
 		{ name: "Wizard", coords: { x: 65.6, y: 77.6 } },
-		{ name: "Wilma", coords: { x: 43.8, y: 60.3 } },
+		{ name: "Wenda", coords: { x: 43.8, y: 60.3 } },
 	];
 
 	// Close when clicking away or pressing Esc
@@ -133,7 +135,7 @@ export default function Game() {
 			>
 				<img
 					ref={imgRef}
-					src="/Map1.jpeg"
+					src="/Scene1.jpeg"
 					alt="Busy scene"
 					className="block w-[calc(95vw)] border-2 border-slate-700 mx-auto max-w-[1200px]"
 				/>

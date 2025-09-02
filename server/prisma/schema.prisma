@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  GUEST
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  scores    Score[]
+  roles     Role     @default(USER)
+}
+
+model Character {
+  id      Int              @id @default(autoincrement())
+  name    String           @unique
+  iconUrl String
+  scenes  SceneCharacter[]
+}
+
+model Scene {
+  id      Int              @id @default(autoincrement())
+  name    String?
+  url     String
+  width   Int? // natural width of the image
+  height  Int? // natural height
+  answers SceneCharacter[]
+  scores  Score[]
+}
+
+model SceneCharacter {
+  // Answer bounding box for a Character in a Scene (normalized)
+  sceneId     Int
+  characterId Int
+  x           Float // left (0..1)
+  y           Float // top (0..1)
+  w           Float? // width (0..1)
+  h           Float? // height (0..1)
+  scene       Scene     @relation(fields: [sceneId], references: [id])
+  character   Character @relation(fields: [characterId], references: [id])
+
+  @@id([sceneId, characterId])
+}
+
+model GuestSession {
+  id        Int      @id @default(autoincrement())
+  name      String
+  roles     Role     @default(GUEST)
+  createdAt DateTime @default(now())
+  scores    Score[]
+}
+
+model Score {
+  id        Int           @id @default(autoincrement())
+  ms        Int // completion time in milliseconds
+  createdAt DateTime      @default(now())
+  sceneId   Int
+  scene     Scene         @relation(fields: [sceneId], references: [id])
+  userId    Int?
+  user      User?         @relation(fields: [userId], references: [id])
+  guestId   Int?
+  guest     GuestSession? @relation(fields: [guestId], references: [id])
+
+  // Either userId or guestId must be non-null; enforce with app logic.
+  @@index([sceneId, ms])
+}

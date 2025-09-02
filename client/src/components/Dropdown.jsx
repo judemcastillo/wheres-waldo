@@ -17,7 +17,7 @@ export default function Dropdown({ xPct, yPct, options, onSelect, onCancel }) {
 					onPointerDown={() => onSelect(char)}
 				>
 					{char.name}
-					<img src={char.icon} alt={char.name} className="size-8" />
+					<img src={char.iconUrl} alt={char.name} className="size-8" />
 				</button>
 			))}
 			<button
