@@ -10,14 +10,11 @@ const character = [
 	{ name: "Wenda", icon: "/Icons/Wenda.png" },
 ];
 
-
-
 export default function Test() {
 	const [box, setBox] = useState(null); // {xPct,yPct}
 	const [result, setResult] = useState(null);
 	const [remaining, setRemaining] = useState(character);
-
-	
+	const sceneUrl = "Scene3.jpeg";
 
 	// timer state
 	const [startAt, setStartAt] = useState(null); // ms timestamp
@@ -28,9 +25,9 @@ export default function Test() {
 	const imgRef = useRef();
 	const wrapRef = useRef();
 	const Ans = [
-		{ name: "Waldo", coords: { x: 43.2, y: 75.5 } },
-		{ name: "Wizard", coords: { x: 65.6, y: 77.6 } },
-		{ name: "Wenda", coords: { x: 43.8, y: 60.3 } },
+		{ name: "Waldo", coords: { x: 0, y: 0 } },
+		{ name: "Wizard", coords: { x: 60, y: 0 } },
+		{ name: "Wenda", coords: { x: 0, y: 0 } },
 	];
 
 	// Close when clicking away or pressing Esc
@@ -101,7 +98,7 @@ export default function Test() {
 	}
 
 	return (
-		<div className="flex flex-col min-h-screen max-w-screen justify-center items-center">
+		<div className="flex flex-col min-h-screen max-w-screen justify-center items-center pb-6">
 			<div className="flex flex-row justify-between items-center  max-w-[1200px] w-[calc(95vw)]">
 				<h2 className="text-xl font-semibold mb-3">
 					<div className="flex flex-row gap-4 items-center">
@@ -135,7 +132,7 @@ export default function Test() {
 			>
 				<img
 					ref={imgRef}
-					src="/Scene1.jpeg"
+					src={sceneUrl}
 					alt="Busy scene"
 					className="block w-[calc(95vw)] border-2 border-slate-700 mx-auto max-w-[1200px]"
 				/>
@@ -159,7 +156,7 @@ export default function Test() {
 					}}
 					containerStyle={{
 						position: "absolute",
-						top:10,
+						top: 10,
 					}}
 					position="top-right"
 				/>

@@ -32,16 +32,48 @@ r.post(
 	"/",
 	passport.authenticate("jwt", { session: false }),
 	async (req, res) => {
-		const { sceneId, ms } = req.body || {};
-		if (!sceneId || !ms)
-			return res.status(400).json({ error: "sceneId and ms required" });
+		try {
+			const sid = Number(req.body?.sceneId);
+			const ms = Math.round(Number(req.body?.ms));
 
-		let data = { sceneId: Number(sceneId), ms: Number(ms) };
-		if (req.user.role === "USER") data.userId = req.user.id;
-		if (req.user.role === "GUEST") data.guestId = req.user.id;
+			if (!Number.isFinite(sid) || !Number.isFinite(ms) || ms <= 0) {
+				console.warn("Bad payload for /scores", req.body);
+				return res
+					.status(400)
+					.json({
+						error: "sceneId and ms (milliseconds) are required numbers",
+					});
+			}
 
-		const score = await prisma.score.create({ data });
-		res.json(score);
+			// optional: ensure scene exists
+			const scene = await prisma.scene.findUnique({
+				where: { id: sid },
+				select: { id: true },
+			});
+			if (!scene) return res.status(404).json({ error: "Scene not found" });
+
+			const data = { sceneId: sid, ms };
+			
+			if (req.user.roles === "GUEST") data.guestId = req.user.id;
+			else data.userId = req.user.id; // USER or ADMIN
+
+			const score = await prisma.score.create({
+				data,
+				select: {
+					id: true,
+					ms: true,
+					sceneId: true,
+					userId: true,
+					guestId: true,
+					createdAt: true,
+				},
+			});
+
+			res.status(201).json(score);
+		} catch (err) {
+			console.error("POST /api/scores failed:", err);
+			res.status(500).json({ error: "Failed to save score" });
+		}
 	}
 );
 

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 
@@ -38,7 +38,6 @@ export default function Game() {
 			ac.abort();
 		};
 	}, [id]);
-	
 
 	// timer state
 	const [startAt, setStartAt] = useState(null); // ms timestamp
@@ -74,7 +73,7 @@ export default function Game() {
 		const yPct = (e.clientY - rect.top) / rect.height;
 		return { xPct: clamp(xPct), yPct: clamp(yPct) };
 	}
-	const clamp = (n, min = 0.02, max = 0.98) => Math.min(max, Math.max(min, n));
+	const clamp = (n, min = 0.04, max = 0.96) => Math.min(max, Math.max(min, n));
 
 	function onPointerDown(e) {
 		if (!imgRef.current) return;
@@ -105,7 +104,13 @@ export default function Game() {
 			setRemaining(left);
 			if (left.length === 0) {
 				setRunning(false);
-				setFinalMs(Date.now() - startAt);
+				const ms = Date.now() - startAt; // compute now
+				setFinalMs(ms); // update state for UI
+				try {
+					await sendScore(ms); // send using the fresh value
+				} catch (e) {
+					console.error("Sending Score failed:", e);
+				}
 				setShowWin(true);
 			}
 		} else {
@@ -120,15 +125,32 @@ export default function Game() {
 		setBox(null);
 	}
 
+	async function sendScore(ms) {
+		// id likely comes from useParams() → string
+		const payload = { sceneId: Number(id), ms: Math.round(ms) };
+
+		try {
+			const res = await api("/api/scores", {
+				method: "POST",
+				body: JSON.stringify(payload),
+			});
+			// optional: show leaderboard or toast here
+			return res;
+		} catch (err) {
+			console.error("Sending Score failed:", err);
+			setError("Sending Score failed:", err);
+		}
+	}
+
 	return (
 		<>
 			<Header />
-			<div className="flex flex-col min-h-screen max-w-screen justify-center items-center">
-				<div className="flex flex-row justify-between items-center  max-w-[1200px] w-[calc(95vw)]">
+			<div className="flex flex-col min-h-screen max-w-screen  items-center pb-7">
+				<div className="grid grid-cols-3 justify-between items-center  max-w-[1200px] w-[calc(95vw)] mt-8">
 					<h2 className="text-xl font-semibold mb-3">
 						<div className="flex flex-row gap-4 items-center">
-							{remaining ? (
-								<h1 className="text-xl">Find :</h1>
+							{remaining.length > 0 ? (
+								<h1 className="text-xl">Find:</h1>
 							) : (
 								"No more characters to find!"
 							)}
@@ -142,13 +164,13 @@ export default function Game() {
 							))}
 						</div>
 					</h2>
-					<div className="text-sm">
+					<div className="text-sm text-center">
 						Time:{" "}
-						<span className="font-mono">
+						<span>
 							<Timer startAt={startAt} running={running} />
 						</span>
 					</div>
-					<div className="">{result && <>{result}</>}</div>
+					<div className="text-right">{result && <>{result}</>}</div>
 				</div>
 				<div
 					ref={wrapRef}
@@ -195,17 +217,20 @@ export default function Game() {
 						/>
 					)}
 					{showWin && (
-						<div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-							<div className="bg-slate-900 border border-slate-700 rounded-xl p-6 text-center">
-								<h3 className="text-2xl font-semibold mb-2 text-amber-50">
+						<div className="absolute inset-0 z-50 bg-black/60 flex items-center justify-center ">
+							<div className="bg-slate-200 border border-none rounded-xl p-6 text-center shadow-2xl">
+								<h3 className="text-2xl font-semibold mb-2 text-black">
 									You found them all! 🎉
 								</h3>
-								<p className="text-slate-300 mb-4">
-									Time: <span className="font-mono">{formatMs(finalMs)}</span>
+								<p className="text-black mb-4">
+									Time: <span className="">{formatMs(finalMs)}</span>
 								</p>
-								<button className="px-4 py-2 bg-slate-800 border border-slate-700 hover:bg-slate-700">
-									Play again
-								</button>
+								<p>{error}</p>
+								<Link to="/menu"> 
+									<button className="px-4 py-2 bg-rose-600 border-none border-slate-700 hover:bg-slate-700 rounded-xl text-white">
+										Back to Menu
+									</button>
+								</Link>
 							</div>
 						</div>
 					)}

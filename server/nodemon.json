@@ -1,0 +1,12 @@
+{
+  "watch": ["src", ".env", "prisma/schema.prisma"],
+  "ext": "js,json",
+  "ignore": ["node_modules", "client", "public", "prisma/migrations/**"],
+  "exec": "node src/index.js",
+  "delay": "200",
+  "env": {
+    "NODE_ENV": "development",
+    "PORT": "3000"
+  },
+  "legacyWatch": true
+}

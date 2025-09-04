@@ -28,4 +28,17 @@ r.post("/check", async (req, res) => {
 	res.json({ correct });
 });
 
+r.post("/add", async (req, res) => {
+	const { url, answers } = req.body || {};
+	if (!url || !answers)
+		return res.status(400).json({ error: "Missing fields" });
+	try {
+		const data = await prisma.scene.create({
+			data,
+		});
+	} catch (error) {
+		console.log(err);
+	}
+});
+
 export default r;
