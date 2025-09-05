@@ -183,7 +183,7 @@ CLIENT_ORIGIN=https://<your-vercel-app>.vercel.app
 (Optional) Post-deploy:
 npx prisma migrate deploy && npx prisma db seed
 ```
-🧪 What I Focused On (skills)
+## 🧪 What I Focused On (skills)
 
 Clean React state & overlay control (click/escape/focus, mobile taps)
 
@@ -197,7 +197,7 @@ Auth (guest + JWT) and secure password hashing (bcrypt)
 
 Cloud deployment on Vercel/Render with environment variables
 
-🧭 Future Ideas
+## 🧭 Future Ideas
 
 Admin tool to upload scenes & annotate answers
 
