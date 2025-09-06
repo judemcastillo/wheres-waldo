@@ -9,7 +9,7 @@
 
 
 **Live Site:**  
-https://wheres-waldo-6lk984hqo-judes-projects-de4780e9.vercel.app/
+https://wheres-waldo-cyan.vercel.app/
 
 A full-stack “Where’s Waldo?” game built with **React + Vite + Tailwind** on the frontend and **Node.js + Express + Prisma + PostgreSQL** on the backend. Players can **play as Guest or log in**, click the image to place a **targeting box with a character dropdown**, get instant feedback, and race the **timer** to the leaderboard.
 
