@@ -10,11 +10,12 @@ import { api } from "../lib/api";
 
 export default function Game() {
 	const { id } = useParams();
-	const [scene, setScene] = useState([]);
+	const [scene, setScene] = useState(null);
 	const [error, setError] = useState(null);
 	const [box, setBox] = useState(null);
 	const [result, setResult] = useState(null);
 	const [remaining, setRemaining] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
 		const ac = new AbortController();
@@ -22,14 +23,20 @@ export default function Game() {
 
 		(async () => {
 			try {
+				setIsLoading(true);
+				setError(null);
 				const data = await api(`/api/scenes/${id}`, { signal: ac.signal });
 				if (alive) {
 					setScene(data);
 					setRemaining(data.characters);
+					setStartAt(Date.now());
+					setRunning(true);
 				}
 			} catch (e) {
 				if (e.name !== "AbortError")
 					setError(e.message || "Failed to load scene");
+			} finally {
+				if (alive) setIsLoading(false);
 			}
 		})();
 
@@ -58,8 +65,6 @@ export default function Game() {
 		}
 		document.addEventListener("pointerdown", onDocClick);
 		window.addEventListener("keydown", onKey);
-		setStartAt(Date.now());
-		setRunning(true);
 
 		return () => {
 			document.removeEventListener("pointerdown", onDocClick);
@@ -76,6 +81,7 @@ export default function Game() {
 	const clamp = (n, min = 0.04, max = 0.96) => Math.min(max, Math.max(min, n));
 
 	function onPointerDown(e) {
+		if (isLoading) return;
 		if (!imgRef.current) return;
 		// Ignore taps/clicks that aren’t directly on the image
 		if (e.target !== imgRef.current) return;
@@ -149,25 +155,34 @@ export default function Game() {
 				<div className="grid grid-cols-3 justify-between items-center  max-w-[1200px] w-[calc(95vw)] mt-8">
 					<h2 className="text-xl font-semibold mb-3">
 						<div className="flex flex-row gap-4 items-center">
-							{remaining.length > 0 ? (
+							{isLoading ? (
+								<div className="flex items-center gap-2">
+									<div className="h-5 w-24 bg-slate-200 rounded animate-pulse" />
+									<div className="flex gap-2">
+										<div className="size-12 bg-slate-200 rounded-full animate-pulse" />
+										<div className="size-12 bg-slate-200 rounded-full animate-pulse" />
+									</div>
+								</div>
+							) : remaining.length > 0 ? (
 								<h1 className="text-xl">Find:</h1>
 							) : (
 								"No more characters to find!"
 							)}
-							{remaining.map((char) => (
-								<img
-									key={char.name}
-									src={char.iconUrl}
-									alt={char.name}
-									className="size-12"
-								/>
-							))}
+							{!isLoading &&
+								remaining.map((char) => (
+									<img
+										key={char.name}
+										src={char.iconUrl}
+										alt={char.name}
+										className="size-12"
+									/>
+								))}
 						</div>
 					</h2>
 					<div className="text-sm text-center">
 						Time:{" "}
 						<span>
-							<Timer startAt={startAt} running={running} />
+							<Timer startAt={startAt} running={running && !isLoading} />
 						</span>
 					</div>
 					<div className="text-right">{result && <>{result}</>}</div>
@@ -177,12 +192,21 @@ export default function Game() {
 					className="relative inline-block max-w-screen"
 					onPointerDown={onPointerDown}
 				>
-					<img
-						ref={imgRef}
-						src={scene.url}
-						alt="Busy scene"
-						className="block w-[calc(95vw)] border-2 border-slate-700 mx-auto max-w-[1200px]"
-					/>
+					{error && (
+						<div className="text-red-600 font-semibold mb-2">
+							{error}
+						</div>
+					)}
+					{isLoading ? (
+						<div className="block w-[calc(95vw)] max-w-[1200px] h-[70vh] bg-slate-200 animate-pulse rounded-lg border-2 border-slate-300" />
+					) : (
+						<img
+							ref={imgRef}
+							src={scene?.url}
+							alt={scene?.name || "Busy scene"}
+							className="block w-[calc(95vw)] border-2 border-slate-700 mx-auto max-w-[1200px]"
+						/>
+					)}
 					{box && (
 						<div data-waldo-overlay onClick={(e) => e.stopPropagation()}>
 							<TargetBox xPct={box.xPct} yPct={box.yPct} />

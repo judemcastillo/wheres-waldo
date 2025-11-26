@@ -7,17 +7,38 @@ import LeaderboardTabs from "../components/LeaderBoardTabs";
 export default function Menu() {
 	const nav = useNavigate();
 	const [scenes, setScenes] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState(null);
+
+	const SceneSkeleton = () => (
+		<div className="rounded-xl w-80 h-65 border-none shadow-2xl overflow-hidden animate-pulse bg-white">
+			<div className="bg-slate-200 w-full h-50" />
+			<div className="flex items-center px-4 py-3 justify-between">
+				<div className="h-4 w-24 bg-slate-200 rounded" />
+				<div className="flex gap-2">
+					<div className="size-8 bg-slate-200 rounded-full" />
+					<div className="size-8 bg-slate-200 rounded-full" />
+					<div className="size-8 bg-slate-200 rounded-full" />
+				</div>
+			</div>
+		</div>
+	);
+
 	useEffect(() => {
 		const ac = new AbortController();
 		let alive = true;
 
 		(async () => {
 			try {
+				setIsLoading(true);
+				setError(null);
 				const data = await api("/api/scenes", { signal: ac.signal });
 				if (alive) setScenes(Array.isArray(data) ? data : []);
 			} catch (e) {
 				if (e.name !== "AbortError")
 					setError(e.message || "Failed to load scenes");
+			} finally {
+				if (alive) setIsLoading(false);
 			}
 		})();
 
@@ -41,34 +62,43 @@ export default function Menu() {
 					<img src="/icons/Waldo.png" alt="" />
 					<div className="flex justify-center items-center flex-col">
 						<div className="flex sm:flex-row gap-5  flex-wrap justify-between items-center w-full flex-col">
-							{scenes.map((s) => (
-								<Link to={`/game/${s.id}`}>
-									<div
-										key={s.id}
-										className="rounded-xl w-80 h-65 self-center border-none shadow-2xl flex flex-col hover:scale-102 transition-transform duration-75"
-									>
-										<img
-											src={s.url}
-											alt={s.name || `Scene ${s.id}`}
-											className="object-cover w-full h-50 rounded-t-xl"
-										/>
-										<div className="flex items-center rounded-b px-4 h-full justify-between">
-											<div>{(s.name ?? "").trim() || `Scene ${s.id}`}</div>
-											<div className="flex gap-1">
-												{s.answers?.map((a) => (
-													<img
-														key={a.character.id}
-														src={a.character.iconUrl}
-														alt={a.character.name}
-														className="size-8"
-														loading="lazy"
-													/>
-												))}
+							{isLoading &&
+								Array.from({ length: 3 }).map((_, i) => (
+									<SceneSkeleton key={i} />
+								))}
+							{!isLoading &&
+								!error &&
+								scenes.map((s) => (
+									<Link to={`/game/${s.id}`} key={s.id}>
+										<div className="rounded-xl w-80 h-65 self-center border-none shadow-2xl flex flex-col hover:scale-102 transition-transform duration-75 bg-white">
+											<img
+												src={s.url}
+												alt={s.name || `Scene ${s.id}`}
+												className="object-cover w-full h-50 rounded-t-xl"
+												loading="lazy"
+											/>
+											<div className="flex items-center rounded-b px-4 h-full justify-between">
+												<div>{(s.name ?? "").trim() || `Scene ${s.id}`}</div>
+												<div className="flex gap-1">
+													{s.answers?.map((a) => (
+														<img
+															key={a.character.id}
+															src={a.character.iconUrl}
+															alt={a.character.name}
+															className="size-8"
+															loading="lazy"
+														/>
+													))}
+												</div>
 											</div>
 										</div>
-									</div>
-								</Link>
-							))}
+									</Link>
+								))}
+							{!isLoading && error && (
+								<div className="text-red-600 font-semibold">
+									Failed to load scenes: {error}
+								</div>
+							)}
 						</div>
 						
 					</div>

@@ -17,6 +17,14 @@ export default function Home() {
 	const [registerForm, setRegisterForm] = useState(initialRegister);
 	const emailRef = useRef(null);
 	const registerEmailRef = useRef(null);
+	const [authLoading, setAuthLoading] = useState(null); // "guest" | "login" | "register" | null
+
+	const LoadingSpinner = ({ className = "" }) => (
+		<span
+			className={`inline-block h-4 w-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin ${className}`}
+			aria-hidden="true"
+		/>
+	);
 
 	// Close + reset helper
 	function closeLogin() {
@@ -32,6 +40,7 @@ export default function Home() {
 
 	async function handleGuestSubmit(e) {
 		e.preventDefault();
+		setAuthLoading("guest");
 		try {
 			const data = await api("/api/auth/guest", {
 				method: "POST",
@@ -41,12 +50,15 @@ export default function Home() {
 			nav("/menu");
 		} catch (err) {
 			console.error(err);
+		} finally {
+			setAuthLoading(null);
 		}
 	}
 
 	async function handleRegister(e) {
 		e.preventDefault();
 		setErrMessage("");
+		setAuthLoading("register");
 		try {
 			const data = await api("/api/auth/register", {
 				method: "POST",
@@ -60,12 +72,15 @@ export default function Home() {
 			closeRegister();
 		} catch (error) {
 			setErrMessage("Invalid email or password.");
+		} finally {
+			setAuthLoading(null);
 		}
 	}
 
 	async function handleLogin(e) {
 		e.preventDefault();
 		setErrMessage("");
+		setAuthLoading("login");
 		try {
 			const data = await api("/api/auth/login", {
 				method: "POST",
@@ -79,6 +94,8 @@ export default function Home() {
 			closeLogin();
 		} catch (error) {
 			setErrMessage("Invalid email or password.");
+		} finally {
+			setAuthLoading(null);
 		}
 	}
 
@@ -136,11 +153,18 @@ export default function Home() {
 				/>
 				<div className="flex flex-col gap-2 pt-5 w-2/3 font-sans font-bold">
 					<button
-						className="rounded bg-green-500 px-10 py-2 text-white cursor-pointer
+				className="rounded bg-green-500 px-10 py-2 text-white cursor-pointer
                     hover:bg-green-400"
 						onClick={handleGuestSubmit}
+						disabled={!!authLoading}
 					>
-						Play as Guest
+						{authLoading === "guest" ? (
+							<span className="flex items-center justify-center gap-2">
+								<LoadingSpinner /> Signing in...
+							</span>
+						) : (
+							"Play as Guest"
+						)}
 					</button>
 					<button
 						onClick={() => setShowLogin(true)}
@@ -228,8 +252,18 @@ export default function Home() {
 									}
 									required
 								/>
-								<button className="w-full bg-rose-600 p-2 rounded-md text-white">
-									Submit
+								<button
+									className="w-full bg-rose-600 p-2 rounded-md text-white disabled:opacity-60 disabled:cursor-not-allowed"
+									disabled={authLoading === "register"}
+								>
+									{authLoading === "register" ? (
+										<span className="flex items-center justify-center gap-2">
+											<LoadingSpinner />
+											Creating account...
+										</span>
+									) : (
+										"Submit"
+									)}
 								</button>
 							</form>
 
@@ -304,8 +338,18 @@ export default function Home() {
 									}
 									required
 								/>
-								<button className="w-full bg-rose-600 p-2 rounded-md text-white">
-									Login
+								<button
+									className="w-full bg-rose-600 p-2 rounded-md text-white disabled:opacity-60 disabled:cursor-not-allowed"
+									disabled={authLoading === "login"}
+								>
+									{authLoading === "login" ? (
+										<span className="flex items-center justify-center gap-2">
+											<LoadingSpinner />
+											Signing in...
+										</span>
+									) : (
+										"Login"
+									)}
 								</button>
 							</form>
 

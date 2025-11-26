@@ -16,7 +16,16 @@ export default function LeaderboardTabs() {
 	const [activeSceneId, setActiveSceneId] = useState(null);
 	const [scoresByScene, setScoresByScene] = useState({});
 	const [loadingScores, setLoadingScores] = useState(false);
+	const [loadingScenes, setLoadingScenes] = useState(true);
 	const [scoresError, setScoresError] = useState("");
+
+	const SkeletonRow = () => (
+		<div className="grid grid-cols-4 px-3 py-2 border-t animate-pulse">
+			<div className="h-4 bg-slate-200 rounded w-10" />
+			<div className="col-span-2 h-4 bg-slate-200 rounded" />
+			<div className="h-4 bg-slate-200 rounded w-16 justify-self-end" />
+		</div>
+	);
 
 	async function loadScores(sceneId) {
 		if (!sceneId || scoresByScene[sceneId]) return; // simple cache
@@ -36,6 +45,7 @@ export default function LeaderboardTabs() {
 		let alive = true;
 		(async () => {
 			try {
+				setLoadingScenes(true);
 				const data = await api("/api/scenes");
 				if (!alive) return;
 				setScenes(data);
@@ -44,6 +54,8 @@ export default function LeaderboardTabs() {
 				if (firstId) loadScores(firstId);
 			} catch {
 				// ignore; leaderboard is optional
+			} finally {
+				if (alive) setLoadingScenes(false);
 			}
 		})();
 		return () => {
@@ -54,10 +66,16 @@ export default function LeaderboardTabs() {
 	return (
 		<div className="mt-2 w-[95%] max-w-[900px] flex flex-col justify-center items-center ">
 			<div className="flex flex-row justify-start w-full">
-				{scenes.length === 0 && (
+				{loadingScenes && (
+					<div className="flex gap-2">
+						<div className="h-8 w-28 bg-slate-200 rounded-t animate-pulse" />
+						<div className="h-8 w-28 bg-slate-200 rounded-t animate-pulse" />
+					</div>
+				)}
+				{!loadingScenes && scenes.length === 0 && (
 					<span className="text-gray-500 text-sm">No scenes yet.</span>
 				)}
-				{scenes.map((s) => {
+				{!loadingScenes && scenes.map((s) => {
 					const label = (s.name ?? "").trim() || `Scene ${s.id}`;
 					const active = activeSceneId === s.id;
 					return (
@@ -85,7 +103,16 @@ export default function LeaderboardTabs() {
 						</div>
 					)}
 					{loadingScores && (
-						<div className="text-gray-500 text-sm text-center">Loading…</div>
+						<div className="border-b border-x rounded-b">
+							<div className="grid grid-cols-4 font-semibold bg-rose-700 px-3 py-2 text-white">
+								<div>Rank</div>
+								<div className="col-span-2 text-left">Player</div>
+								<div className="text-right">Time (s)</div>
+							</div>
+							{Array.from({ length: 5 }).map((_, i) => (
+								<SkeletonRow key={i} />
+							))}
+						</div>
 					)}
 					{!loadingScores && activeSceneId && (
 						<div className="border-b border-x rounded-b">
