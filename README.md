@@ -9,7 +9,7 @@
 
 
 **Live Site:**  
-https://wheres-waldo-6lk984hqo-judes-projects-de4780e9.vercel.app/
+https://wheres-waldo-cyan.vercel.app/
 
 A full-stack “Where’s Waldo?” game built with **React + Vite + Tailwind** on the frontend and **Node.js + Express + Prisma + PostgreSQL** on the backend. Players can **play as Guest or log in**, click the image to place a **targeting box with a character dropdown**, get instant feedback, and race the **timer** to the leaderboard.
 
@@ -183,7 +183,7 @@ CLIENT_ORIGIN=https://<your-vercel-app>.vercel.app
 (Optional) Post-deploy:
 npx prisma migrate deploy && npx prisma db seed
 ```
-🧪 What I Focused On (skills)
+## 🧪 What I Focused On (skills)
 
 Clean React state & overlay control (click/escape/focus, mobile taps)
 
@@ -197,7 +197,7 @@ Auth (guest + JWT) and secure password hashing (bcrypt)
 
 Cloud deployment on Vercel/Render with environment variables
 
-🧭 Future Ideas
+## 🧭 Future Ideas
 
 Admin tool to upload scenes & annotate answers
 
